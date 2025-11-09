@@ -1,246 +1,457 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Planta de Producción - PICONAS</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Planta de Producción - PICONAS (Sistema Completo)</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f4f6f9;
-      margin: 0;
-      padding: 0;
-      color: #333;
+    :root{
+      --bg:#f5f7fa; --card:#ffffff; --muted:#6b7280; --accent:#0ea5ad; --accent-2:#ff7a59; --danger:#ef4444;
+      --surface-shadow: 0 6px 18px rgba(15,23,42,0.06);
+      --radius:12px; --pad:14px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
     }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--bg); color:#0f172a}
+    header{background:linear-gradient(90deg,#0f172a 0%, #06202a 100%); color:white; padding:18px 20px; display:flex; align-items:center; gap:18px}
+    header h1{font-size:20px; margin:0}
+    .wrap{display:grid; grid-template-columns:260px 1fr; gap:18px; padding:18px}
+    @media(max-width:880px){ .wrap{grid-template-columns:1fr; padding:12px} .sidebar{order:2} .main{order:1} }
 
-    header {
-      background: #20232a;
-      color: #61dafb;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.3rem;
-      letter-spacing: 1px;
-    }
+    /* Sidebar */
+    .sidebar{background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:var(--surface-shadow)}
+    .nav{display:flex; flex-direction:column; gap:6px}
+    .nav button{background:transparent; border:none; text-align:left; padding:10px; border-radius:8px; cursor:pointer; color:var(--muted)}
+    .nav button.active{background:linear-gradient(90deg,#e6fffb, #ddf6ff); color:var(--accent); font-weight:600}
+    .small{font-size:13px; color:var(--muted)}
 
-    main {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 1rem;
-      padding: 1rem;
-    }
+    /* Main area */
+    .main{display:flex; flex-direction:column; gap:18px}
+    .card{background:var(--card); padding:var(--pad); border-radius:12px; box-shadow:var(--surface-shadow)}
+    .row{display:flex; gap:12px}
+    .col{flex:1}
+    label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
+    input, textarea, select{width:100%; padding:10px; border-radius:8px; border:1px solid #e6eef3; font-size:14px}
+    textarea{min-height:80px}
+    .btn{display:inline-block; padding:10px 12px; border-radius:10px; border:none; cursor:pointer}
+    .btn-primary{background:var(--accent); color:white}
+    .btn-warning{background:var(--accent-2); color:white}
+    .btn-danger{background:var(--danger); color:white}
+    .muted{color:var(--muted)}
 
-    @media (max-width: 768px) {
-      main {
-        grid-template-columns: 1fr;
-      }
-    }
+    /* tables */
+    table{width:100%; border-collapse:collapse}
+    th, td{padding:10px; text-align:left; border-bottom:1px solid #f1f5f9}
+    th{font-size:13px; color:var(--muted)}
 
-    section {
-      background: #fff;
-      border-radius: 10px;
-      padding: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+    /* badges */
+    .badge{display:inline-block; padding:6px 8px; border-radius:999px; font-size:12px}
+    .badge.green{background:#ecfeff; color:var(--accent)}
+    .badge.gray{background:#f1f5f9; color:var(--muted)}
 
-    input, textarea, button, select {
-      width: 100%;
-      padding: 0.6rem;
-      margin-top: 0.5rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
+    /* small helpers */
+    .flex{display:flex; align-items:center; gap:8px}
+    .space{height:8px}
+    footer{padding:12px; text-align:center; font-size:13px; color:var(--muted)}
 
-    button {
-      background: #61dafb;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.2s ease;
-    }
-
-    button:hover {
-      background: #4ab3d6;
-    }
-
-    .receta {
-      background: #fefefe;
-      border: 1px solid #ddd;
-      padding: 0.8rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-    }
-
-    .receta h3 {
-      margin: 0.3rem 0;
-      color: #20232a;
-    }
-
-    .acciones {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .acciones button {
-      flex: 1;
-      font-size: 0.9rem;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 8px;
-      margin-top: 0.5rem;
-    }
+    /* tiny responsive tweaks */
+    @media(max-width:600px){ header h1{font-size:16px} .row{flex-direction:column} }
   </style>
 </head>
 <body>
-
   <header>
-    🍳 <b>Planta de Producción - PICONAS</b>
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#06b6d4"/><path d="M7 12h10M7 8h10M7 16h10" stroke="#042f36" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div>
+      <h1>Planta de Producción • PICONAS</h1>
+      <div class="small">Sistema local (GitHub Pages) · Guardado en el navegador</div>
+    </div>
   </header>
 
-  <main>
-    <!-- PANEL DE CREACIÓN / EDICIÓN -->
-    <section>
-      <h2>📋 Crear o Editar Receta</h2>
-      <form id="recetaForm">
-        <label>🔒 Código de acceso:</label>
-        <input type="password" id="codigo" placeholder="22782522" required>
+  <div class="wrap">
+    <aside class="sidebar">
+      <div class="flex" style="justify-content:space-between; align-items:center">
+        <div>
+          <div style="font-weight:700">Panel de módulos</div>
+          <div class="small">Admin: admin / Código: 22782522</div>
+        </div>
+        <div>
+          <button class="btn btn-warning" id="exportAllBtn" title="Exportar todo">Exportar</button>
+        </div>
+      </div>
+      <div class="space"></div>
+      <nav class="nav" id="menu">
+        <button data-view="dashboard" class="active">📊 Dashboard</button>
+        <button data-view="recetas">🍲 Recetas</button>
+        <button data-view="inventario">📦 Inventario</button>
+        <button data-view="produccion">🏭 Producción</button>
+        <button data-view="usuarios">🔐 Usuarios</button>
+        <button data-view="logs">🗂️ Historial</button>
+      </nav>
+      <div class="space"></div>
+      <div class="small">Versión local • Sin servidor • Guarda en LocalStorage</div>
+    </aside>
 
-        <label>📘 Nombre de la receta:</label>
-        <input type="text" id="nombre" placeholder="Ej: Salsa blanca" required>
+    <main class="main">
+      <!-- DASHBOARD -->
+      <section id="view-dashboard" class="card view">
+        <div class="row">
+          <div class="col card">
+            <h3>Resumen rápido</h3>
+            <div class="space"></div>
+            <div class="row">
+              <div class="col">
+                <div class="small">Recetas</div>
+                <div style="font-size:20px; font-weight:700;"> <span id="countRecetas">0</span></div>
+              </div>
+              <div class="col">
+                <div class="small">Ingredientes (ítems)</div>
+                <div style="font-size:20px; font-weight:700;"> <span id="countInsumos">0</span></div>
+              </div>
+              <div class="col">
+                <div class="small">Producciones totales</div>
+                <div style="font-size:20px; font-weight:700;"> <span id="countProducciones">0</span></div>
+              </div>
+            </div>
+            <div class="space"></div>
+            <h4>Últimas producciones</h4>
+            <div id="ultimasProducciones"></div>
+          </div>
+          <div class="col card">
+            <h3>Alertas de stock</h3>
+            <div id="alertasStock"></div>
+          </div>
+        </div>
+      </section>
 
-        <label>🥣 Ingredientes:</label>
-        <textarea id="ingredientes" rows="3" placeholder="Lista de ingredientes..." required></textarea>
+      <!-- RECETAS -->
+      <section id="view-recetas" class="card view" style="display:none">
+        <h3>Gestión de Recetas</h3>
+        <div class="space"></div>
+        <div class="row">
+          <div class="col">
+            <label>Nombre de la receta</label>
+            <input id="r_nombre" placeholder="Ej: Salsa Roja" />
+            <label>Ingredientes (formato: ingrediente|cantidad|unidad por línea)</label>
+            <textarea id="r_ingredientes" placeholder="Tomate|10|kg\nSal|0.5|kg"></textarea>
+            <label>Proceso / Pasos</label>
+            <textarea id="r_proceso" placeholder="Paso 1...\nPaso 2..."></textarea>
+            <div class="space"></div>
+            <div class="flex">
+              <button class="btn btn-primary" id="r_guardar">Guardar Receta</button>
+              <button class="btn" id="r_limpiar">Limpiar</button>
+            </div>
+          </div>
+          <div class="col">
+            <h4>Recetas existentes</h4>
+            <div id="tablaRecetas"></div>
+          </div>
+        </div>
+      </section>
 
-        <label>⚙️ Proceso:</label>
-        <textarea id="proceso" rows="3" placeholder="Pasos del proceso..." required></textarea>
+      <!-- INVENTARIO -->
+      <section id="view-inventario" class="card view" style="display:none">
+        <h3>Inventario de Ingredientes</h3>
+        <div class="row">
+          <div class="col">
+            <label>Nombre del ingrediente</label>
+            <input id="i_nombre" placeholder="Ej: Tomate" />
+            <label>Cantidad</label>
+            <input id="i_cantidad" type="number" min="0" step="any" placeholder="Cantidad" />
+            <label>Unidad (kg, L, unidades)</label>
+            <input id="i_unidad" placeholder="kg, L, unidad" />
+            <div class="space"></div>
+            <div class="flex">
+              <button class="btn btn-primary" id="i_guardar">Agregar / Actualizar</button>
+              <button class="btn" id="i_limpiar">Limpiar</button>
+            </div>
+          </div>
+          <div class="col">
+            <h4>Stock actual</h4>
+            <div id="tablaInventario"></div>
+          </div>
+        </div>
+      </section>
 
-        <label>🎥 Video (opcional):</label>
-        <input type="file" id="video" accept="video/*">
+      <!-- PRODUCCION -->
+      <section id="view-produccion" class="card view" style="display:none">
+        <h3>Registro de Producción</h3>
+        <div class="row">
+          <div class="col">
+            <label>Seleccionar receta</label>
+            <select id="p_receta"></select>
+            <label>Cantidad a producir (según unidad principal de receta)</label>
+            <input id="p_cantidad" type="number" min="0.1" step="0.1" value="1" />
+            <label>Responsable</label>
+            <input id="p_responsable" placeholder="Nombre de operario" />
+            <div class="space"></div>
+            <div class="flex">
+              <button class="btn btn-primary" id="p_iniciar">Iniciar producción</button>
+              <button class="btn" id="p_limpiar">Limpiar</button>
+            </div>
+          </div>
+          <div class="col">
+            <h4>Producciones registradas</h4>
+            <div id="tablaProduccion"></div>
+          </div>
+        </div>
+      </section>
 
-        <button type="submit" id="btnGuardar">💾 Guardar Receta</button>
-      </form>
-    </section>
+      <!-- USUARIOS -->
+      <section id="view-usuarios" class="card view" style="display:none">
+        <h3>Control de Usuarios (simple)</h3>
+        <div class="row">
+          <div class="col">
+            <label>Usuario</label>
+            <input id="u_usuario" placeholder="usuario" />
+            <label>Rol</label>
+            <select id="u_rol"><option value="operario">Operario</option><option value="admin">Administrador</option></select>
+            <label>Código / contraseña</label>
+            <input id="u_clave" placeholder="ej: 22782522" />
+            <div class="space"></div>
+            <div class="flex"><button class="btn btn-primary" id="u_guardar">Agregar / Actualizar</button><button class="btn" id="u_limpiar">Limpiar</button></div>
+          </div>
+          <div class="col">
+            <h4>Usuarios</h4>
+            <div id="tablaUsuarios"></div>
+          </div>
+        </div>
+      </section>
 
-    <!-- LISTA DE RECETAS -->
-    <section>
-      <h2>📚 Recetas Guardadas</h2>
-      <div id="listaRecetas"></div>
-    </section>
-  </main>
+      <!-- LOGS -->
+      <section id="view-logs" class="card view" style="display:none">
+        <h3>Historial de operaciones</h3>
+        <div id="tablaLogs"></div>
+      </section>
+
+      <footer class="card">PICONAS · Sistema local - {Guardado en LocalStorage} · &copy; <span id="anio"></span></footer>
+    </main>
+  </div>
 
   <script>
-    const listaRecetas = document.getElementById("listaRecetas");
-    const form = document.getElementById("recetaForm");
-    const codigoAcceso = "22782522";
-    let editIndex = null;
+    // ---------------------- UTILIDADES ----------------------
+    const db = {
+      recetasKey: 'pp_recetas_v1',
+      inventarioKey: 'pp_inventario_v1',
+      produccionesKey: 'pp_producciones_v1',
+      usuariosKey: 'pp_usuarios_v1',
+      logsKey: 'pp_logs_v1'
+    };
 
-    let recetas = JSON.parse(localStorage.getItem("recetas")) || [];
+    function load(key){return JSON.parse(localStorage.getItem(key) || '[]')}
+    function save(key,val){ localStorage.setItem(key, JSON.stringify(val)) }
+    function now(){ return new Date().toISOString() }
+    function addLog(type, msg){ const logs = load(db.logsKey); logs.unshift({time: now(), type, msg}); save(db.logsKey, logs); }
 
-    function mostrarRecetas() {
-      listaRecetas.innerHTML = "";
-      if (recetas.length === 0) {
-        listaRecetas.innerHTML = "<p>No hay recetas guardadas aún.</p>";
-        return;
+    // ---------------------- DATOS INICIALES ----------------------
+    // Si no hay admin, crear admin por defecto
+    (function seed(){
+      const users = load(db.usuariosKey);
+      if(!users.find(u=>u.usuario==='admin')){
+        users.push({usuario:'admin', clave:'22782522', rol:'admin'});
+        save(db.usuariosKey, users);
+        addLog('sistema','Usuario admin creado (admin / 22782522)');
       }
+    })();
 
-      recetas.forEach((r, i) => {
-        const div = document.createElement("div");
-        div.className = "receta";
-        div.innerHTML = `
-          <h3>${r.nombre}</h3>
-          <p><b>Ingredientes:</b><br>${r.ingredientes}</p>
-          <p><b>Proceso:</b><br>${r.proceso}</p>
-          ${r.video ? `<video src="${r.video}" controls></video>` : ""}
-          <div class="acciones">
-            <button onclick="editarReceta(${i})">✏️ Editar</button>
-            <button onclick="eliminarReceta(${i})">🗑️ Eliminar</button>
-          </div>
-        `;
-        listaRecetas.appendChild(div);
+    // ---------------------- NAVEGACIÓN ----------------------
+    const menuBtns = document.querySelectorAll('#menu button');
+    const views = document.querySelectorAll('.view');
+    menuBtns.forEach(b=> b.addEventListener('click', ()=>{
+      menuBtns.forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      const v = b.dataset.view;
+      views.forEach(view=> view.style.display = (view.id===('view-'+v)) ? '' : 'none');
+      renderAll();
+    }));
+
+    // ---------------------- DASHBOARD ----------------------
+    function renderDashboard(){
+      const recetas = load(db.recetasKey);
+      const insumos = load(db.inventarioKey);
+      const prod = load(db.produccionesKey);
+      document.getElementById('countRecetas').textContent = recetas.length;
+      document.getElementById('countInsumos').textContent = insumos.length;
+      document.getElementById('countProducciones').textContent = prod.length;
+
+      const ult = prod.slice().sort((a,b)=> b.time.localeCompare(a.time)).slice(0,5);
+      const cont = document.getElementById('ultimasProducciones'); cont.innerHTML='';
+      if(ult.length===0) cont.innerHTML='<div class="small muted">No hay producciones aun.</div>';
+      ult.forEach(p=>{
+        const d = document.createElement('div'); d.className='small';
+        d.innerHTML = `<b>${p.receta}</b> — ${p.cantidad} • ${new Date(p.time).toLocaleString()} • <span class='muted'>${p.responsable||'--'}</span>`;
+        cont.appendChild(d);
+      });
+
+      // Alertas stock bajos (umbral 5 unidades/ kg)
+      const alertsCont = document.getElementById('alertasStock'); alertsCont.innerHTML='';
+      insumos.forEach(i=>{
+        if(parseFloat(i.cantidad) <= (i.umbral || 5)){
+          const div = document.createElement('div'); div.className='small';
+          div.innerHTML = `<span class='badge gray'>${i.nombre}</span> — <span style='color:${i.cantidad<=0?"#ef4444":"#b45309"}'>${i.cantidad} ${i.unidad}</span>`;
+          alertsCont.appendChild(div);
+        }
       });
     }
 
-    function guardarRecetas() {
-      localStorage.setItem("recetas", JSON.stringify(recetas));
-      mostrarRecetas();
-    }
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const codigo = document.getElementById("codigo").value.trim();
-      if (codigo !== codigoAcceso) {
-        alert("❌ Código incorrecto");
-        return;
-      }
-
-      const nombre = document.getElementById("nombre").value.trim();
-      const ingredientes = document.getElementById("ingredientes").value.trim();
-      const proceso = document.getElementById("proceso").value.trim();
-      const videoFile = document.getElementById("video").files[0];
-
-      const receta = { nombre, ingredientes, proceso };
-
-      const guardar = (videoData = null) => {
-        receta.video = videoData;
-
-        if (editIndex !== null) {
-          recetas[editIndex] = receta;
-          editIndex = null;
-          alert("✅ Receta actualizada correctamente.");
-        } else {
-          recetas.push(receta);
-          alert("✅ Receta guardada correctamente.");
-        }
-
-        guardarRecetas();
-        form.reset();
-        document.getElementById("btnGuardar").textContent = "💾 Guardar Receta";
-      };
-
-      if (videoFile) {
-        const reader = new FileReader();
-        reader.onload = (e) => guardar(e.target.result);
-        reader.readAsDataURL(videoFile);
-      } else {
-        guardar();
-      }
+    // ---------------------- RECETAS ----------------------
+    document.getElementById('r_guardar').addEventListener('click', ()=>{
+      const nombre = document.getElementById('r_nombre').value.trim();
+      const ingrRaw = document.getElementById('r_ingredientes').value.trim();
+      const proceso = document.getElementById('r_proceso').value.trim();
+      if(!nombre || !ingrRaw){ alert('Nombre e ingredientes son obligatorios'); return; }
+      // parse ingredientes
+      const ingredientes = ingrRaw.split('\n').map(line=>{
+        const parts = line.split('|').map(p=>p.trim());
+        return {nombre:parts[0]||'', cantidad:parseFloat(parts[1]||0), unidad:parts[2]||''};
+      }).filter(x=>x.nombre);
+      const recetas = load(db.recetasKey);
+      const existingIdx = recetas.findIndex(r=> r.nombre.toLowerCase()===nombre.toLowerCase());
+      const obj = {nombre, ingredientes, proceso, time: now()};
+      if(existingIdx>=0){ recetas[existingIdx] = obj; addLog('receta', `Receta actualizada: ${nombre}`); }
+      else { recetas.push(obj); addLog('receta', `Receta creada: ${nombre}`); }
+      save(db.recetasKey, recetas); renderRecetas(); renderSeleccionReceta(); renderDashboard();
+      alert('Receta guardada.');
     });
 
-    function eliminarReceta(index) {
-      const codigo = prompt("Introduce el código de eliminación:");
-      if (codigo !== codigoAcceso) {
-        alert("Código incorrecto ❌");
-        return;
-      }
-      if (confirm(`¿Eliminar la receta "${recetas[index].nombre}"?`)) {
-        recetas.splice(index, 1);
-        guardarRecetas();
-      }
+    document.getElementById('r_limpiar').addEventListener('click', ()=>{ document.getElementById('r_nombre').value=''; document.getElementById('r_ingredientes').value=''; document.getElementById('r_proceso').value=''; });
+
+    function renderRecetas(){
+      const recetas = load(db.recetasKey);
+      const cont = document.getElementById('tablaRecetas'); cont.innerHTML='';
+      if(recetas.length===0){ cont.innerHTML='<div class="small muted">Sin recetas.</div>'; return; }
+      const table = document.createElement('table'); const thead = document.createElement('thead'); thead.innerHTML='<tr><th>Nombre</th><th>Ingredientes</th><th>Acciones</th></tr>'; table.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      recetas.forEach((r,idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.nombre}</td><td>${r.ingredientes.map(i=>`${i.nombre} (${i.cantidad}${i.unidad? ' '+i.unidad:''})`).join('<br>')}</td><td><button onclick='recetaEditar(${idx})' class='btn'>Editar</button> <button onclick='recetaEliminar(${idx})' class='btn btn-danger'>Eliminar</button></td>`;
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody); cont.appendChild(table);
     }
 
-    function editarReceta(index) {
-      const codigo = prompt("Introduce el código de edición:");
-      if (codigo !== codigoAcceso) {
-        alert("Código incorrecto ❌");
-        return;
+    window.recetaEditar = function(idx){
+      const recetas = load(db.recetasKey); const r = recetas[idx];
+      document.getElementById('r_nombre').value = r.nombre;
+      document.getElementById('r_ingredientes').value = r.ingredientes.map(i=>`${i.nombre}|${i.cantidad}|${i.unidad}`).join('\n');
+      document.getElementById('r_proceso').value = r.proceso;
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+    window.recetaEliminar = function(idx){
+      if(!confirm('¿Eliminar receta?')) return; const recetas = load(db.recetasKey); const nombre = recetas[idx].nombre; recetas.splice(idx,1); save(db.recetasKey,recetas); addLog('receta', `Receta eliminada: ${nombre}`); renderRecetas(); renderSeleccionReceta(); renderDashboard(); }
+
+    // ---------------------- INVENTARIO ----------------------
+    document.getElementById('i_guardar').addEventListener('click', ()=>{
+      const nombre = document.getElementById('i_nombre').value.trim();
+      const cantidad = parseFloat(document.getElementById('i_cantidad').value) || 0;
+      const unidad = document.getElementById('i_unidad').value.trim() || '';
+      if(!nombre){ alert('Nombre es requerido'); return; }
+      const inv = load(db.inventarioKey);
+      const idx = inv.findIndex(x=> x.nombre.toLowerCase()===nombre.toLowerCase());
+      if(idx>=0){ inv[idx].cantidad = (parseFloat(inv[idx].cantidad)||0) + cantidad; inv[idx].unidad = unidad || inv[idx].unidad; addLog('inventario', `Stock actualizado: ${nombre} +${cantidad}`); }
+      else{ inv.push({nombre, cantidad, unidad, umbral:5}); addLog('inventario', `Ingrediente agregado: ${nombre} (${cantidad} ${unidad})`); }
+      save(db.inventarioKey, inv); renderInventario(); renderDashboard(); alert('Inventario actualizado');
+    });
+    document.getElementById('i_limpiar').addEventListener('click', ()=>{ document.getElementById('i_nombre').value=''; document.getElementById('i_cantidad').value=''; document.getElementById('i_unidad').value=''; });
+
+    function renderInventario(){
+      const inv = load(db.inventarioKey); const cont = document.getElementById('tablaInventario'); cont.innerHTML='';
+      if(inv.length===0){ cont.innerHTML='<div class="small muted">Inventario vacío.</div>'; return; }
+      const table = document.createElement('table'); table.innerHTML = '<thead><tr><th>Ingrediente</th><th>Cantidad</th><th>Unidad</th><th>Acciones</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      inv.forEach((i,idx)=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${i.nombre}</td><td>${i.cantidad}</td><td>${i.unidad}</td><td><button onclick='invEditar(${idx})' class='btn'>Editar</button> <button onclick='invEliminar(${idx})' class='btn btn-danger'>Eliminar</button></td>`; tbody.appendChild(tr); });
+      table.appendChild(tbody); cont.appendChild(table);
+    }
+    window.invEditar = function(idx){ const inv = load(db.inventarioKey); const i = inv[idx]; document.getElementById('i_nombre').value = i.nombre; document.getElementById('i_cantidad').value = i.cantidad; document.getElementById('i_unidad').value = i.unidad; }
+    window.invEliminar = function(idx){ if(!confirm('Eliminar ingrediente?')) return; const inv = load(db.inventarioKey); const nombre = inv[idx].nombre; inv.splice(idx,1); save(db.inventarioKey,inv); addLog('inventario', `Ingrediente eliminado: ${nombre}`); renderInventario(); renderDashboard(); }
+
+    // ---------------------- PRODUCCIÓN ----------------------
+    function renderSeleccionReceta(){ const sel = document.getElementById('p_receta'); sel.innerHTML=''; const recetas = load(db.recetasKey); recetas.forEach((r,idx)=>{ const opt = document.createElement('option'); opt.value = idx; opt.textContent = r.nombre; sel.appendChild(opt); }); }
+
+    document.getElementById('p_iniciar').addEventListener('click', ()=>{
+      const idx = parseInt(document.getElementById('p_receta').value);
+      const cantidad = parseFloat(document.getElementById('p_cantidad').value) || 0;
+      const responsable = document.getElementById('p_responsable').value.trim();
+      if(isNaN(idx) || cantidad<=0){ alert('Seleccione receta y cantidad válida'); return; }
+      const recetas = load(db.recetasKey);
+      const receta = recetas[idx];
+      // verificar stock suficiente
+      const inv = load(db.inventarioKey);
+      const faltantes = [];
+      receta.ingredientes.forEach(ing=>{
+        const necesario = (parseFloat(ing.cantidad)||0) * cantidad; // multiplicar por cantidad a producir
+        const item = inv.find(x=> x.nombre.toLowerCase()===ing.nombre.toLowerCase());
+        const disponible = item ? parseFloat(item.cantidad)||0 : 0;
+        if(disponible < necesario) faltantes.push({nombre:ing.nombre, necesario, disponible, unidad:ing.unidad});
+      });
+      if(faltantes.length>0){
+        const txt = faltantes.map(f=>`${f.nombre}: necesita ${f.necesario} ${f.unidad} (disp ${f.disponible})`).join('\n');
+        if(!confirm('Stock insuficiente para algunos ingredientes:\n'+txt+'\n\nDesea registrar la producción de todos modos (marcar manualmente)?')) return;
       }
 
-      const r = recetas[index];
-      document.getElementById("nombre").value = r.nombre;
-      document.getElementById("ingredientes").value = r.ingredientes;
-      document.getElementById("proceso").value = r.proceso;
-      document.getElementById("codigo").value = codigoAcceso;
-      document.getElementById("btnGuardar").textContent = "✏️ Actualizar Receta";
+      // descontar stock (si existe)
+      receta.ingredientes.forEach(ing=>{
+        const necesario = (parseFloat(ing.cantidad)||0) * cantidad;
+        const itemIdx = inv.findIndex(x=> x.nombre.toLowerCase()===ing.nombre.toLowerCase());
+        if(itemIdx>=0){ inv[itemIdx].cantidad = (parseFloat(inv[itemIdx].cantidad)||0) - necesario; if(inv[itemIdx].cantidad<0) inv[itemIdx].cantidad = 0; }
+      });
+      save(db.inventarioKey, inv);
 
-      editIndex = index;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+      // guardar produccion
+      const producciones = load(db.produccionesKey);
+      const p = { receta: receta.nombre, recetaIdx: idx, cantidad, responsable, estado: 'completado', time: now() };
+      producciones.push(p); save(db.produccionesKey, producciones);
+      addLog('produccion', `Producción registrada: ${receta.nombre} x${cantidad} por ${responsable||'--'}`);
+      renderProducciones(); renderInventario(); renderDashboard(); alert('Producción registrada y stock actualizado.');
+    });
+    document.getElementById('p_limpiar').addEventListener('click', ()=>{ document.getElementById('p_cantidad').value='1'; document.getElementById('p_responsable').value=''; });
 
-    mostrarRecetas();
+    function renderProducciones(){ const prod = load(db.produccionesKey); const cont = document.getElementById('tablaProduccion'); cont.innerHTML=''; if(prod.length===0){ cont.innerHTML='<div class="small muted">Sin producciones registradas.</div>'; return; } const table=document.createElement('table'); table.innerHTML='<thead><tr><th>Receta</th><th>Cantidad</th><th>Responsable</th><th>Fecha</th><th>Acciones</th></tr></thead>'; const tbody=document.createElement('tbody'); prod.slice().reverse().forEach((p,idx)=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${p.receta}</td><td>${p.cantidad}</td><td>${p.responsable||'--'}</td><td>${new Date(p.time).toLocaleString()}</td><td><button onclick='produccionEliminar(${prod.length-1-idx})' class='btn btn-danger'>Eliminar</button></td>`; tbody.appendChild(tr); }); table.appendChild(tbody); cont.appendChild(table); }
+    window.produccionEliminar = function(idx){ if(!confirm('Eliminar registro de producción?')) return; const prod = load(db.produccionesKey); const removed = prod.splice(idx,1); save(db.produccionesKey,prod); addLog('produccion', `Producción eliminada: ${removed[0].receta}`); renderProducciones(); renderDashboard(); }
+
+    // ---------------------- USUARIOS ----------------------
+    document.getElementById('u_guardar').addEventListener('click', ()=>{
+      const usuario = document.getElementById('u_usuario').value.trim();
+      const rol = document.getElementById('u_rol').value;
+      const clave = document.getElementById('u_clave').value.trim();
+      if(!usuario || !clave){ alert('Usuario y clave son requeridos'); return; }
+      const users = load(db.usuariosKey);
+      const idx = users.findIndex(u=>u.usuario.toLowerCase()===usuario.toLowerCase());
+      if(idx>=0){ users[idx].rol = rol; users[idx].clave = clave; addLog('usuario', `Usuario actualizado: ${usuario}`); }
+      else{ users.push({usuario, clave, rol}); addLog('usuario', `Usuario creado: ${usuario}`); }
+      save(db.usuariosKey, users); renderUsuarios(); alert('Usuario guardado');
+    });
+    document.getElementById('u_limpiar').addEventListener('click', ()=>{ document.getElementById('u_usuario').value=''; document.getElementById('u_clave').value=''; });
+
+    function renderUsuarios(){ const users = load(db.usuariosKey); const cont = document.getElementById('tablaUsuarios'); cont.innerHTML=''; if(users.length===0){ cont.innerHTML='<div class="small muted">Sin usuarios.</div>'; return; } const table=document.createElement('table'); table.innerHTML='<thead><tr><th>Usuario</th><th>Rol</th><th>Acciones</th></tr></thead>'; const tbody=document.createElement('tbody'); users.forEach((u,idx)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${u.usuario}</td><td>${u.rol}</td><td><button onclick='usuarioEliminar(${idx})' class='btn btn-danger'>Eliminar</button></td>`; tbody.appendChild(tr); }); table.appendChild(tbody); cont.appendChild(table); }
+    window.usuarioEliminar = function(idx){ if(!confirm('Eliminar usuario?')) return; const users = load(db.usuariosKey); const removed = users.splice(idx,1); save(db.usuariosKey,users); addLog('usuario', `Usuario eliminado: ${removed[0].usuario}`); renderUsuarios(); }
+
+    // ---------------------- LOGS ----------------------
+    function renderLogs(){ const logs = load(db.logsKey); const cont = document.getElementById('tablaLogs'); cont.innerHTML=''; if(logs.length===0){ cont.innerHTML='<div class="small muted">Sin logs.</div>'; return; } const table=document.createElement('table'); table.innerHTML='<thead><tr><th>Fecha</th><th>Tipo</th><th>Mensaje</th></tr></thead>'; const tbody=document.createElement('tbody'); logs.forEach(l=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${new Date(l.time).toLocaleString()}</td><td>${l.type}</td><td>${l.msg}</td>`; tbody.appendChild(tr); }); table.appendChild(tbody); cont.appendChild(table); }
+
+    // ---------------------- EXPORT / IMPORT ----------------------
+    document.getElementById('exportAllBtn').addEventListener('click', ()=>{
+      const data = {
+        recetas: load(db.recetasKey),
+        inventario: load(db.inventarioKey),
+        producciones: load(db.produccionesKey),
+        usuarios: load(db.usuariosKey),
+        logs: load(db.logsKey)
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'pp_piconas_export_' + (new Date()).toISOString().slice(0,10) + '.json'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    // ---------------------- RENDERS GLOBALES ----------------------
+    function renderAll(){ renderRecetas(); renderInventario(); renderSeleccionReceta(); renderProducciones(); renderUsuarios(); renderLogs(); renderDashboard(); document.getElementById('anio').textContent = new Date().getFullYear(); }
+
+    // inicial
+    renderAll();
+
+    // ---------------------- UTIL: EXPORT CSV / IMPORT (opcional) ----------------------
+    // (Puedes ampliar para importar JSON y fusionar)
+
+    // ---------------------- FIN ----------------------
   </script>
 </body>
 </html>
