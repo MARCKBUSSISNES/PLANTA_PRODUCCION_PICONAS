@@ -6,90 +6,127 @@
   <title>Planta de Producción - PICONAS</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       background: #f4f6f9;
       margin: 0;
       padding: 0;
+      color: #333;
     }
+
     header {
       background: #20232a;
       color: #61dafb;
       padding: 1rem;
       text-align: center;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
     }
+
     main {
       display: grid;
       grid-template-columns: 1fr 2fr;
       gap: 1rem;
       padding: 1rem;
     }
+
+    @media (max-width: 768px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
     section {
       background: #fff;
       border-radius: 10px;
       padding: 1rem;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     input, textarea, button, select {
       width: 100%;
-      padding: 0.5rem;
+      padding: 0.6rem;
       margin-top: 0.5rem;
-      border-radius: 5px;
+      border-radius: 6px;
       border: 1px solid #ccc;
+      font-size: 1rem;
     }
+
     button {
       background: #61dafb;
       border: none;
       cursor: pointer;
       font-weight: bold;
+      transition: background 0.2s ease;
     }
+
     button:hover {
       background: #4ab3d6;
     }
+
     .receta {
-      background: #fafafa;
+      background: #fefefe;
       border: 1px solid #ddd;
-      padding: 0.5rem;
-      border-radius: 5px;
+      padding: 0.8rem;
+      border-radius: 8px;
       margin-bottom: 1rem;
     }
+
     .receta h3 {
       margin: 0.3rem 0;
       color: #20232a;
     }
+
+    .acciones {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .acciones button {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
     video {
       width: 100%;
       border-radius: 8px;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>🍳 Planta de Producción - PICONAS</h1>
+    🍳 <b>Planta de Producción - PICONAS</b>
   </header>
 
   <main>
-    <!-- Panel de creación -->
+    <!-- PANEL DE CREACIÓN / EDICIÓN -->
     <section>
-      <h2>Crear / Editar Receta</h2>
+      <h2>📋 Crear o Editar Receta</h2>
       <form id="recetaForm">
         <label>🔒 Código de acceso:</label>
-        <input type="password" id="codigo" placeholder="Ingresa el código (22782522)" required>
+        <input type="password" id="codigo" placeholder="22782522" required>
+
         <label>📘 Nombre de la receta:</label>
-        <input type="text" id="nombre" required>
+        <input type="text" id="nombre" placeholder="Ej: Salsa blanca" required>
+
         <label>🥣 Ingredientes:</label>
-        <textarea id="ingredientes" rows="3"></textarea>
+        <textarea id="ingredientes" rows="3" placeholder="Lista de ingredientes..." required></textarea>
+
         <label>⚙️ Proceso:</label>
-        <textarea id="proceso" rows="3"></textarea>
-        <label>🎥 Video (simulado):</label>
+        <textarea id="proceso" rows="3" placeholder="Pasos del proceso..." required></textarea>
+
+        <label>🎥 Video (opcional):</label>
         <input type="file" id="video" accept="video/*">
-        <button type="submit">Guardar Receta</button>
+
+        <button type="submit" id="btnGuardar">💾 Guardar Receta</button>
       </form>
     </section>
 
-    <!-- Lista de recetas -->
+    <!-- LISTA DE RECETAS -->
     <section>
-      <h2>📋 Recetas guardadas</h2>
+      <h2>📚 Recetas Guardadas</h2>
       <div id="listaRecetas"></div>
     </section>
   </main>
@@ -97,8 +134,9 @@
   <script>
     const listaRecetas = document.getElementById("listaRecetas");
     const form = document.getElementById("recetaForm");
+    const codigoAcceso = "22782522";
+    let editIndex = null;
 
-    // Cargar recetas desde LocalStorage
     let recetas = JSON.parse(localStorage.getItem("recetas")) || [];
 
     function mostrarRecetas() {
@@ -107,16 +145,19 @@
         listaRecetas.innerHTML = "<p>No hay recetas guardadas aún.</p>";
         return;
       }
+
       recetas.forEach((r, i) => {
         const div = document.createElement("div");
         div.className = "receta";
         div.innerHTML = `
           <h3>${r.nombre}</h3>
-          <p><b>Ingredientes:</b> ${r.ingredientes}</p>
-          <p><b>Proceso:</b> ${r.proceso}</p>
+          <p><b>Ingredientes:</b><br>${r.ingredientes}</p>
+          <p><b>Proceso:</b><br>${r.proceso}</p>
           ${r.video ? `<video src="${r.video}" controls></video>` : ""}
-          <button onclick="editarReceta(${i})">✏️ Editar</button>
-          <button onclick="eliminarReceta(${i})">🗑️ Eliminar</button>
+          <div class="acciones">
+            <button onclick="editarReceta(${i})">✏️ Editar</button>
+            <button onclick="eliminarReceta(${i})">🗑️ Eliminar</button>
+          </div>
         `;
         listaRecetas.appendChild(div);
       });
@@ -129,60 +170,77 @@
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const codigo = document.getElementById("codigo").value;
-      if (codigo !== "22782522") {
-        alert("Código incorrecto ❌");
+
+      const codigo = document.getElementById("codigo").value.trim();
+      if (codigo !== codigoAcceso) {
+        alert("❌ Código incorrecto");
         return;
       }
 
-      const nombre = document.getElementById("nombre").value;
-      const ingredientes = document.getElementById("ingredientes").value;
-      const proceso = document.getElementById("proceso").value;
+      const nombre = document.getElementById("nombre").value.trim();
+      const ingredientes = document.getElementById("ingredientes").value.trim();
+      const proceso = document.getElementById("proceso").value.trim();
       const videoFile = document.getElementById("video").files[0];
 
       const receta = { nombre, ingredientes, proceso };
 
-      if (videoFile) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          receta.video = e.target.result;
+      const guardar = (videoData = null) => {
+        receta.video = videoData;
+
+        if (editIndex !== null) {
+          recetas[editIndex] = receta;
+          editIndex = null;
+          alert("✅ Receta actualizada correctamente.");
+        } else {
           recetas.push(receta);
-          guardarRecetas();
-          form.reset();
-        };
-        reader.readAsDataURL(videoFile);
-      } else {
-        receta.video = null;
-        recetas.push(receta);
+          alert("✅ Receta guardada correctamente.");
+        }
+
         guardarRecetas();
         form.reset();
+        document.getElementById("btnGuardar").textContent = "💾 Guardar Receta";
+      };
+
+      if (videoFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => guardar(e.target.result);
+        reader.readAsDataURL(videoFile);
+      } else {
+        guardar();
       }
     });
 
     function eliminarReceta(index) {
-      if (confirm("¿Eliminar esta receta?")) {
+      const codigo = prompt("Introduce el código de eliminación:");
+      if (codigo !== codigoAcceso) {
+        alert("Código incorrecto ❌");
+        return;
+      }
+      if (confirm(`¿Eliminar la receta "${recetas[index].nombre}"?`)) {
         recetas.splice(index, 1);
         guardarRecetas();
       }
     }
 
     function editarReceta(index) {
-      const r = recetas[index];
       const codigo = prompt("Introduce el código de edición:");
-      if (codigo !== "22782522") {
+      if (codigo !== codigoAcceso) {
         alert("Código incorrecto ❌");
         return;
       }
+
+      const r = recetas[index];
       document.getElementById("nombre").value = r.nombre;
       document.getElementById("ingredientes").value = r.ingredientes;
       document.getElementById("proceso").value = r.proceso;
-      recetas.splice(index, 1);
-      guardarRecetas();
+      document.getElementById("codigo").value = codigoAcceso;
+      document.getElementById("btnGuardar").textContent = "✏️ Actualizar Receta";
+
+      editIndex = index;
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     mostrarRecetas();
   </script>
-
 </body>
 </html>
