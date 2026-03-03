@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Las Piconas ERP</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- App root -->
+  <div id="app"></div>
+
+  <!-- Lib -->
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+ <!-- Core -->
+<script defer src="js/recetas_seed.js"></script>
+<script defer src="js/database.js"></script>
+<script defer src="js/backup_fs.js"></script>
+<script defer src="js/utils.js"></script>
+<script defer src="js/auth.js"></script>
+<script defer src="js/router.js"></script>
+
+  <!-- Views / Modules -->
+  <script defer src="js/dashboard.js"></script>
+  <script defer src="js/clientes.js"></script>
+  <script defer src="js/vehiculos.js"></script>
+
+  <script defer src="js/recetas.js"></script>
+  <script defer src="js/produccion.js"></script>
+  <script defer src="js/inventario.js"></script>
+
+  <!-- Tickets debe ir antes de envios -->
+  <script defer src="js/tickets.js"></script>
+  <script defer src="js/envios.js"></script>
+
+  <script defer src="js/export.js"></script>
+  <script defer src="js/materiasprimas.js"></script>
+  <script defer src="js/compras_mp.js"></script>
+  <script defer src="js/usuarios.js"></script>
+  <!-- Boot -->
+  <script defer>
+    function $(id){ return document.getElementById(id); }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initDatabase();
+      boot();
+    });
+
+    function boot(){
+      const app = $("app");
+      if(!getSession()){
+        app.innerHTML = renderLogin();
+        return;
+      }
+      app.innerHTML = renderShell();
+      loadView("dashboard");
+      paintUser();
+    }
+
+    function renderLogin(){
+      return `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+          <div class="panel" style="max-width:420px;width:100%;text-align:center;">
+            <img src="assets/logo.png" alt="Las Piconas" style="width:120px;max-width:100%;margin-bottom:12px;" onerror="this.style.display='none'">
+            <div class="big">Login</div>
+            <div class="muted" style="margin-top:6px;">MarckBusiness • Enterprise Resource Planning</div>
+
+            <div style="margin-top:14px;text-align:left;">
+              <label>Usuario</label>
+              <input id="user" autocomplete="username" placeholder="juan luis" />
+              <label>Clave</label>
+              <input id="pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+              <button class="btn accent" style="width:100%;" onclick="doLogin()">Ingresar</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function doLogin(){
+      const u = $("user").value;
+      const p = $("pass").value;
+      if(login(u,p)){
+        location.reload();
+      }else{
+        alert("Credenciales incorrectas");
+      }
+    }
+
+    function renderShell(){
+      return `
+        <div class="sidebar">
+          <div style="text-align:center;margin-bottom:14px;">
+            <img src="assets/logo.png" alt="Las Piconas" style="width:110px;max-width:100%;display:block;margin:0 auto 10px;" onerror="this.style.display='none'">
+            <div style="font-weight:800;letter-spacing:.6px;">Las Piconas</div>
+            <div class="muted small">ERP • Planta de Produccion</div>
+          </div>
+
+<button data-view="dashboard" onclick="loadView('dashboard')">Dashboard</button>
+<hr>
+
+<button data-view="clientes" onclick="loadView('clientes')">Sucursales</button>
+<button data-view="vehiculos" onclick="loadView('vehiculos')">Vehículos</button>
+
+${can("usuarios") ? `
+  <hr>
+  <button data-view="usuarios" onclick="loadView('usuarios')">Usuarios & Roles</button>
+` : ``}
+
+<hr>
+
+<button data-view="recetas" onclick="loadView('recetas')">Recetas</button>
+<button data-view="produccion" onclick="loadView('produccion')">Producción</button>
+<button data-view="inventarioPT" onclick="loadView('inventarioPT')">Inventario PT</button>
+<button data-view="mp" onclick="loadView('mp')">Inventario MP</button>
+<button data-view="comprasMP" onclick="loadView('comprasMP')">Compras MP</button>
+
+<hr>
+
+<button data-view="envios" onclick="loadView('envios')">Envíos</button>
+
+<hr>
+
+${isAdmin() ? `
+  <div class="muted small" style="margin:6px 0 8px;">Backups (Admin)</div>
+  <button onclick="uiChooseBackupFolder()">📁 Elegir carpeta backup</button>
+  <button onclick="uiRestoreBackup()">⬆️ Cargar backup</button>
+` : ``}
+
+<button onclick="logoutAndReload()">Cerrar Sesión</button>
+        </div>
+
+        <div class="main">
+          <div class="panel" style="padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <div>
+              <div class="big" style="font-size:18px;">MarckBusiness • Enterprise Resource Planning</div>
+              <div class="muted small">© 2026 Marck Business. Todos los derechos reservados.</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="small muted">Sesión</div>
+              <div id="top-user" style="font-weight:800;">—</div>
+            </div>
+          </div>
+
+          <div id="view-container"></div>
+        </div>
+      `;
+    }
+
+    function paintUser(){
+      const s = getSession();
+      const el = $("top-user");
+      if(el) el.textContent = (s && s.usuario) ? `${s.usuario} (${s.rol||""})` : "—";
+    }
+
+    
+
+// ===== Backups (File System Access) - UI =====
+function uiChooseBackupFolder(){
+  if(!isAdmin()){ alert("Solo ADMIN puede seleccionar carpeta de backup."); return; }
+  chooseBackupFolderFS().catch(e=>{ console.error(e); alert("No se pudo seleccionar carpeta: " + (e?.message||e)); });
+}
+function uiRestoreBackup(){
+  if(!isAdmin()){ alert("Solo ADMIN puede cargar/restaurar un backup."); return; }
+  const inp = document.getElementById("backupFileInput");
+  if(!inp){ alert("Input de backup no existe."); return; }
+  inp.value = "";
+  inp.click();
+}
+async function onBackupFileSelected(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  if(!isAdmin()){ alert("Solo ADMIN puede cargar/restaurar un backup."); return; }
+  try{
+    await importBackupDB(file);
+    toast?.("✅ Backup cargado. Recargando...");
+    setTimeout(()=>location.reload(), 300);
+  }catch(e){
+    console.error(e);
+    alert("Backup inválido: " + (e?.message||e));
+  }
+}
+
+function logoutAndReload(){
+      logout();
+      location.reload();
+    }
+  </script>
+  <input id="backupFileInput" type="file" accept="application/json,.json" style="display:none" onchange="onBackupFileSelected(event)">
+</body>
+</html>
